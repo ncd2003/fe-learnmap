@@ -1,0 +1,538 @@
+.course-builder-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #f5f6fa;
+}
+
+.builder-header {
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 20px 30px;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.btn-back {
+  padding: 8px 16px;
+  background: #f0f0f0;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.btn-back:hover {
+  background: #e0e0e0;
+}
+
+.builder-title {
+  margin: 0;
+  font-size: 24px;
+  color: #2c3e50;
+}
+
+.builder-subtitle {
+  margin: 4px 0 0 0;
+  font-size: 14px;
+  color: #7f8c8d;
+}
+
+.builder-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.builder-sidebar {
+  width: 320px;
+  background: white;
+  border-right: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+}
+
+.builder-sidebar h3 {
+  padding: 20px;
+  margin: 0;
+  font-size: 16px;
+  color: #2c3e50;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.course-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.course-item {
+  padding: 15px;
+  margin-bottom: 8px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 2px solid transparent;
+}
+
+.course-item:hover {
+  background: #e9ecef;
+}
+
+.course-item.selected {
+  background: #e3f2fd;
+  border-color: #2196f3;
+}
+
+.course-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.course-name {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 14px;
+}
+
+.course-category {
+  font-size: 12px;
+  color: #7f8c8d;
+}
+
+/* Main Content */
+.builder-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 30px;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+}
+
+.empty-state h3 {
+  margin: 0 0 10px 0;
+  color: #2c3e50;
+  font-size: 20px;
+}
+
+.empty-state p {
+  margin: 0;
+  color: #7f8c8d;
+  font-size: 14px;
+}
+
+/* Structure Container */
+.structure-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 30px;
+}
+
+.structure-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.course-header-info {
+  flex: 1;
+}
+
+.structure-header h2 {
+  margin: 0 0 8px 0;
+  font-size: 22px;
+  color: #2c3e50;
+}
+
+.course-description {
+  margin: 0 0 12px 0;
+  color: #7f8c8d;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.course-meta {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.course-price,
+.course-author {
+  padding: 6px 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #495057;
+}
+
+.course-price {
+  background: #d4edda;
+  color: #155724;
+}
+
+.btn-add-primary {
+  padding: 12px 24px;
+  background: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.btn-add-primary:hover {
+  background: #1976d2;
+}
+
+/* Tree Structure */
+.structure-tree {
+  margin-top: 20px;
+}
+
+.empty-tree {
+  text-align: center;
+  padding: 60px 20px;
+  color: #7f8c8d;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 2px dashed #dee2e6;
+}
+
+.tree-item {
+  margin-bottom: 8px;
+}
+
+.tree-item-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  transition: all 0.2s;
+}
+
+.tree-item-header:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.level-1 .tree-item-header {
+  background: #e3f2fd;
+  border-color: #90caf9;
+}
+
+.level-2 {
+  margin-left: 30px;
+}
+
+.level-2 .tree-item-header {
+  background: #fff3e0;
+  border-color: #ffcc80;
+}
+
+.level-3 {
+  margin-left: 30px;
+}
+
+.level-3 .tree-item-header {
+  background: #f3e5f5;
+  border-color: #ce93d8;
+}
+
+.level-4 {
+  margin-left: 30px;
+}
+
+.level-4 .tree-item-header {
+  background: #e8f5e9;
+  border-color: #a5d6a7;
+}
+
+.expand-btn {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  color: #666;
+  transition: transform 0.2s;
+}
+
+.expand-btn:hover {
+  color: #2196f3;
+}
+
+.item-icon {
+  font-size: 18px;
+}
+
+.item-title {
+  flex: 1;
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 14px;
+}
+
+.item-position,
+.item-duration,
+.item-type,
+.item-size {
+  padding: 4px 10px;
+  background: white;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #666;
+}
+
+.item-type {
+  background: #2196f3;
+  color: white;
+}
+
+.btn-add-small {
+  padding: 6px 12px;
+  background: white;
+  color: #2196f3;
+  border: 1px solid #2196f3;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-add-small:hover {
+  background: #2196f3;
+  color: white;
+}
+
+.btn-view-resource {
+  padding: 4px 10px;
+  background: #4caf50;
+  color: white;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-view-resource:hover {
+  background: #388e3c;
+  transform: translateY(-1px);
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 18px;
+  color: #2c3e50;
+}
+
+.btn-close-modal {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  font-size: 28px;
+  color: #666;
+  cursor: pointer;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.btn-close-modal:hover {
+  color: #e74c3c;
+}
+
+/* Builder Form */
+.builder-form {
+  padding: 24px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #2196f3;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+/* Modal Actions */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.btn-cancel,
+.btn-submit {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-cancel {
+  background: #f0f0f0;
+  color: #666;
+}
+
+.btn-cancel:hover {
+  background: #e0e0e0;
+}
+
+.btn-submit {
+  background: #2196f3;
+  color: white;
+}
+
+.btn-submit:hover {
+  background: #1976d2;
+}
+
+.btn-submit:disabled,
+.btn-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* File Input */
+.form-group input[type="file"] {
+  padding: 8px;
+  border: 2px dashed #ddd;
+  background: #f8f9fa;
+}
+
+.file-info {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #e3f2fd;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #1976d2;
+}
+
+/* Loading */
+.admin-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #2196f3;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
