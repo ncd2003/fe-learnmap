@@ -24,7 +24,7 @@ function UserPlans() {
       const response = await planApi.getAllPublicPlans();
       if (response.statusCode === 200 && response.data) {
         const plansData = Array.isArray(response.data) ? response.data : [];
-        setPlans(plansData);
+        setPlans(plansData.reverse());
       } else {
         setPlans([]);
       }
@@ -192,10 +192,12 @@ function UserPlans() {
                 <p className="plan-code">{plan.code}</p>
               </div>
 
-              <div className="plan-price-section">
-                <div className="plan-price">{formatPrice(plan.price)}</div>
-                <div className="plan-duration">/{plan.durationInDays} ngày</div>
-              </div>
+              {plan.code !== 'FREE' && (
+                <div className="plan-price-section">
+                  <div className="plan-price">{formatPrice(plan.price)}</div>
+                  <div className="plan-duration">/{plan.durationInDays} ngày</div>
+                </div>
+              )}
 
               {plan.description && (
                 <div className="plan-features">
@@ -206,12 +208,14 @@ function UserPlans() {
                 </div>
               )}
 
-              <button 
-                className="btn-select-plan"
-                onClick={() => handleSelectPlan(plan)}
-              >
-                Chọn Gói Này
-              </button>
+              {plan.code !== 'FREE' && (
+                <button 
+                  className="btn-select-plan"
+                  onClick={() => handleSelectPlan(plan)}
+                >
+                  Chọn Gói Này
+                </button>
+              )}
             </div>
           ))}
         </div>
