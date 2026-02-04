@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
-const API_BASE_URL = 'http://localhost:8080/api/v1';
+// Sử dụng relative path trong development để tránh CORS, full URL trong production
+const API_BASE_URL = import.meta.env.DEV ? '/api/v1' : 'https://be-learnmap.onrender.com/api/v1';
 
 // UnAuthorBaseApi - Cho các API public không cần authentication
 const UnAuthorBaseApi = axios.create({
