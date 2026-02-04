@@ -83,7 +83,7 @@ function Login() {
       });
     } catch (error) {
       // Show error toast
-      toast.error(error.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại email và mật khẩu.', {
+      toast.error('Đăng nhập thất bại. Vui lòng kiểm tra lại email và mật khẩu.', {
         position: "top-right",
         autoClose: 3000,
       });

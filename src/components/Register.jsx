@@ -101,10 +101,10 @@ function Register() {
       }, 2000);
     } catch (error) {
       // Show error toast
-      toast.error(error.message || 'Đăng ký thất bại. Vui lòng thử lại.', {
-        position: "top-right",
-        autoClose: 3000,
-      });
+      // toast.error(error.message || 'Đăng ký thất bại. Vui lòng thử lại.', {
+      //   position: "top-right",
+      //   autoClose: 3000,
+      // });
       
       setErrors({
         submit: error.message || 'Đăng ký thất bại. Vui lòng thử lại.'

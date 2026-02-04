@@ -260,7 +260,14 @@ function HomePage() {
           <div className="nav-menu">
             <a href="#" className="nav-link active">Trang chủ</a>
             <a href="#" className="nav-link">Tìm kiếm trường</a>
-            <a href="#" className="nav-link" onClick={(e) => { e.preventDefault(); navigate('/career-test'); }}>
+            <a href="#" className="nav-link" onClick={(e) => { 
+              e.preventDefault(); 
+              if (!user) {
+                window.dispatchEvent(new CustomEvent('show-login-modal'));
+              } else {
+                navigate('/career-test');
+              }
+            }}>
               Hướng nghiệp
             </a>
             <a href="#" className="nav-link" onClick={(e) => { e.preventDefault(); navigate('/plans'); }}>
