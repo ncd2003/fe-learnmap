@@ -24,7 +24,13 @@ function UserPlans() {
       const response = await planApi.getAllPublicPlans();
       if (response.statusCode === 200 && response.data) {
         const plansData = Array.isArray(response.data) ? response.data : [];
-        setPlans(plansData.reverse());
+        // Sort plans: FREE first, then others
+        const sortedPlans = plansData.sort((a, b) => {
+          if (a.code === 'FREE') return -1;
+          if (b.code === 'FREE') return 1;
+          return 0;
+        });
+        setPlans(sortedPlans);
       } else {
         setPlans([]);
       }
@@ -195,7 +201,7 @@ function UserPlans() {
               {plan.code !== 'FREE' && (
                 <div className="plan-price-section">
                   <div className="plan-price">{formatPrice(plan.price)}</div>
-                  <div className="plan-duration">/{plan.durationInDays} ngày</div>
+                  <div className="plan-duration">/{plan.durationInDays} tháng</div>
                 </div>
               )}
 
