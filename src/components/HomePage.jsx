@@ -584,7 +584,7 @@ function HomePage() {
           </div>
           <div className="footer-bottom">
             <p>&copy; 2026 LearnMap. All rights reserved.</p>
-            <p>Liên hệ: <strong>0328395273</strong> | Email: <strong>huyan119022004@gmail.com</strong>| Địa chỉ: <strong>Trường CĐ Việt - Đức Nghệ An - 315 Lê Duẩn, Nghệ An</strong></p>
+            <p>Liên hệ: <strong>0328395273</strong> | Email: <strong>huyan119022004@gmail.com</strong>| Địa chỉ: <strong>Trường CĐ Việt - Đức Nghệ An. Số 315 Lê Duẩn, P. Trường Vinh, Nghệ An</strong></p>
           </div>
         </div>
       </footer>
