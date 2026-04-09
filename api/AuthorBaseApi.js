@@ -2,8 +2,8 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 
 // Sử dụng relative path trong development để tránh CORS, full URL trong production
-const API_BASE_URL = 'https://be-learnmap.onrender.com/api/v1';
-// const API_BASE_URL = 'http://localhost:8080/api/v1';
+// const API_BASE_URL = 'https://be-learnmap.onrender.com/api/v1';
+const API_BASE_URL = 'http://localhost:8080/api/v1';
 // AuthorBaseApi - Cho các API cần authentication
 const AuthorBaseApi = axios.create({
   baseURL: API_BASE_URL,
@@ -30,6 +30,8 @@ AuthorBaseApi.interceptors.request.use(
 AuthorBaseApi.interceptors.response.use(
   (response) => response,
   (error) => {
+    const skipErrorToast = error.config?.skipErrorToast === true;
+
     if (error.response) {
       const { status, data } = error.response;
       const errorMessage = data?.message || data?.error || 'Có lỗi xảy ra';
@@ -40,38 +42,48 @@ AuthorBaseApi.interceptors.response.use(
         localStorage.removeItem('user');
         localStorage.removeItem('currentPage');
         
-        toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.', {
-          position: "top-right",
-          autoClose: 3000,
-        });
+        if (!skipErrorToast) {
+          toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.', {
+            position: "top-right",
+            autoClose: 3000,
+          });
+        }
         
         // Dispatch event để hiển thị login modal
         window.dispatchEvent(new CustomEvent('show-login-modal'));
       } else if (status === 403) {
         // Forbidden - Không có quyền truy cập
-        toast.error('Bạn không có quyền thực hiện thao tác này.', {
-          position: "top-right",
-          autoClose: 3000,
-        });
+        if (!skipErrorToast) {
+          toast.error('Bạn không có quyền thực hiện thao tác này.', {
+            position: "top-right",
+            autoClose: 3000,
+          });
+        }
       } else {
         // Các lỗi khác
-        toast.error(errorMessage, {
+        if (!skipErrorToast) {
+          toast.error(errorMessage, {
+            position: "top-right",
+            autoClose: 3000,
+          });
+        }
+      }
+    } else if (error.request) {
+      // Request được gửi nhưng không nhận được response
+      if (!skipErrorToast) {
+        toast.error('Không thể kết nối đến server. Vui lòng kiểm tra kết nối.', {
           position: "top-right",
           autoClose: 3000,
         });
       }
-    } else if (error.request) {
-      // Request được gửi nhưng không nhận được response
-      toast.error('Không thể kết nối đến server. Vui lòng kiểm tra kết nối.', {
-        position: "top-right",
-        autoClose: 3000,
-      });
     } else {
       // Lỗi khác trong quá trình setup request
-      toast.error(error.message || 'Có lỗi xảy ra', {
-        position: "top-right",
-        autoClose: 3000,
-      });
+      if (!skipErrorToast) {
+        toast.error(error.message || 'Có lỗi xảy ra', {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      }
     }
     
     return Promise.reject(error);

@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import HomePage from './components/HomePage';
 import Login from './components/Login';
@@ -19,6 +19,28 @@ import { AuthProvider } from './components/AuthProvider';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
+
+const GA_MEASUREMENT_ID = 'G-P0JNSJ9XQB';
+
+function AnalyticsTracker() {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (typeof window.gtag !== 'function') {
+      return;
+    }
+
+    const pagePath = `${location.pathname}${location.search}${location.hash}`;
+    window.gtag('event', 'page_view', {
+      send_to: GA_MEASUREMENT_ID,
+      page_path: pagePath,
+      page_location: window.location.href,
+      page_title: document.title,
+    });
+  }, [location.pathname, location.search, location.hash]);
+
+  return null;
+}
 
 function App() {
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -47,6 +69,7 @@ function App() {
 
   return (
     <Router>
+      <AnalyticsTracker />
       <AuthProvider>
         <div className="App">
           <Routes>

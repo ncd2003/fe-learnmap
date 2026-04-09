@@ -1,12 +1,124 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from './AuthProvider';
+import { analyticsApi } from '../../api/analyticsApi';
 import './Dashboard.css';
 
 function Dashboard() {
+  const REALTIME_REFRESH_MS = 15000;
+
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+  const [trafficStats, setTrafficStats] = useState({
+    totalUsers: 0,
+    newUsers: 0,
+    sessions: 0,
+    screenPageViews: 0,
+  });
+  const [onlineUsers, setOnlineUsers] = useState(0);
+  const [loadingAnalytics, setLoadingAnalytics] = useState(false);
+
+  const userRole = user?.userLogin?.role || user?.role;
+  const isAdmin = userRole === 'ADMIN';
+  const isAdminOrStaff = userRole === 'ADMIN' || userRole === 'STAFF';
+
+  const toNumber = (value) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+
+  const extractOnlineUsers = (data) => {
+    if (typeof data === 'number') {
+      return toNumber(data);
+    }
+
+    if (!data || typeof data !== 'object') {
+      return 0;
+    }
+
+    const possibleKeys = [
+      'onlineUsers',
+      'activeUsers',
+      'currentUsers',
+      'usersOnline',
+      'concurrentUsers',
+      'totalUsers',
+    ];
+
+    for (const key of possibleKeys) {
+      if (data[key] !== undefined) {
+        return toNumber(data[key]);
+      }
+    }
+
+    const firstNumericValue = Object.values(data).find((value) => Number.isFinite(Number(value)));
+    return firstNumericValue !== undefined ? toNumber(firstNumericValue) : 0;
+  };
+
+  useEffect(() => {
+    if (!isAdmin) {
+      setLoadingAnalytics(false);
+      return;
+    }
+
+    let isMounted = true;
+
+    const fetchTraffic = async () => {
+      try {
+        const trafficResponse = await analyticsApi.getTraffic();
+
+        if (!isMounted) {
+          return;
+        }
+
+        if (trafficResponse?.statusCode === 200 && trafficResponse.data) {
+          setTrafficStats({
+            totalUsers: toNumber(trafficResponse.data.totalUsers),
+            newUsers: toNumber(trafficResponse.data.newUsers),
+            sessions: toNumber(trafficResponse.data.sessions),
+            screenPageViews: toNumber(trafficResponse.data.screenPageViews),
+          });
+        }
+      } finally {
+        if (isMounted) {
+          setLoadingAnalytics(false);
+        }
+      }
+    };
+
+    const fetchOnlineUsers = async () => {
+      const realtimeResponse = await analyticsApi.getOnlineUsers();
+
+      if (!isMounted) {
+        return;
+      }
+
+      if (realtimeResponse?.statusCode === 200) {
+        setOnlineUsers(extractOnlineUsers(realtimeResponse.data));
+      }
+    };
+
+    fetchTraffic();
+    fetchOnlineUsers();
+
+    const realtimeInterval = window.setInterval(() => {
+      fetchOnlineUsers();
+    }, REALTIME_REFRESH_MS);
+
+    return () => {
+      isMounted = false;
+      window.clearInterval(realtimeInterval);
+    };
+  }, [isAdmin]);
+
+  const formatStatValue = (value) => {
+    if (loadingAnalytics) {
+      return '...';
+    }
+
+    return toNumber(value).toLocaleString('vi-VN');
+  };
 
   const renderContent = () => {
     // Nếu đang ở nested route, render Outlet (child routes)
@@ -20,7 +132,7 @@ function Dashboard() {
         <div className="welcome-section">
           <h1>Chào mừng, {user?.userLogin?.fullName || user?.fullName}!</h1>
           <p className="role-badge">
-            {user?.userLogin?.role === 'ADMIN' ? '👑 Quản trị viên' : '👨‍💼 Nhân viên'}
+            {isAdmin ? '👑 Quản trị viên' : '👨‍💼 Nhân viên'}
           </p>
         </div>
 
@@ -52,7 +164,7 @@ function Dashboard() {
             <div className="card-arrow">→</div>
           </div>
 
-          {user?.userLogin?.role === 'ADMIN' && (
+          {isAdmin && (
             <div className="dashboard-card" onClick={() => navigate('/dashboard/accounts')}>
               <div className="card-icon">👥</div>
               <div className="card-content">
@@ -63,7 +175,7 @@ function Dashboard() {
             </div>
           )}
 
-          {user?.userLogin?.role === 'ADMIN' && (
+          {isAdmin && (
             <div className="dashboard-card" onClick={() => navigate('/dashboard/plans')}>
               <div className="card-icon">💎</div>
               <div className="card-content">
@@ -97,32 +209,40 @@ function Dashboard() {
               <div className="stat-box">
                 <div className="stat-icon">📚</div>
                 <div className="stat-details">
-                  <div className="stat-value">0</div>
-                  <div className="stat-label">Danh mục</div>
+                  <div className="stat-value">{formatStatValue(trafficStats.totalUsers)}</div>
+                  <div className="stat-label">Tổng người dùng</div>
                 </div>
               </div>
 
               <div className="stat-box">
                 <div className="stat-icon">📖</div>
                 <div className="stat-details">
-                  <div className="stat-value">0</div>
-                  <div className="stat-label">Khóa học</div>
+                  <div className="stat-value">{formatStatValue(trafficStats.newUsers)}</div>
+                  <div className="stat-label">Người dùng mới</div>
                 </div>
               </div>
 
               <div className="stat-box">
                 <div className="stat-icon">👥</div>
                 <div className="stat-details">
-                  <div className="stat-value">0</div>
-                  <div className="stat-label">Học viên</div>
+                  <div className="stat-value">{formatStatValue(trafficStats.sessions)}</div>
+                  <div className="stat-label">Phiên truy cập</div>
                 </div>
               </div>
 
               <div className="stat-box">
                 <div className="stat-icon">⭐</div>
                 <div className="stat-details">
-                  <div className="stat-value">4.9</div>
-                  <div className="stat-label">Đánh giá TB</div>
+                  <div className="stat-value">{formatStatValue(trafficStats.screenPageViews)}</div>
+                  <div className="stat-label">Lượt xem trang</div>
+                </div>
+              </div>
+
+              <div className="stat-box">
+                <div className="stat-icon">🟢</div>
+                <div className="stat-details">
+                  <div className="stat-value">{formatStatValue(onlineUsers)}</div>
+                  <div className="stat-label">Đang online (cập nhật 15s)</div>
                 </div>
               </div>
         </div>
@@ -174,7 +294,7 @@ function Dashboard() {
             <span>Course Builder</span>
           </button> */}
 
-          {user?.userLogin?.role === 'ADMIN' || user?.userLogin?.role === 'STAFF' && (
+          {isAdminOrStaff && (
             <button 
               className={`nav-item ${location.pathname === '/dashboard/accounts' ? 'active' : ''}`}
               onClick={() => navigate('/dashboard/accounts')}
@@ -184,7 +304,7 @@ function Dashboard() {
             </button>
           )}
 
-          {user?.userLogin?.role === 'ADMIN' && (
+          {isAdmin && (
             <button 
               className={`nav-item ${location.pathname === '/dashboard/plans' ? 'active' : ''}`}
               onClick={() => navigate('/dashboard/plans')}
@@ -225,7 +345,7 @@ function Dashboard() {
               <div className="user-details">
                 <div className="user-name">{user?.userLogin?.fullName || user?.fullName}</div>
                 <div className="user-role">
-                  {user?.userLogin?.role === 'ADMIN' ? 'Quản trị viên' : 'Nhân viên'}
+                  {isAdmin ? 'Quản trị viên' : 'Nhân viên'}
                 </div>
               </div>
             </div>
