@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from './AuthProvider';
 import { analyticsApi } from '../../api/analyticsApi';
@@ -10,6 +10,8 @@ function Dashboard() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+
+  const [allTimeTotalUsers, setAllTimeTotalUsers] = useState(0);
   const [trafficStats, setTrafficStats] = useState({
     totalUsers: 0,
     newUsers: 0,
@@ -65,20 +67,54 @@ function Dashboard() {
     let isMounted = true;
 
     const fetchTraffic = async () => {
+      setLoadingAnalytics(true);
       try {
-        const trafficResponse = await analyticsApi.getTraffic();
+        const [allTimeTrafficResult, periodTrafficResult] = await Promise.allSettled([
+          analyticsApi.getAllTimeTraffic(),
+          analyticsApi.getTraffic(),
+        ]);
 
         if (!isMounted) {
           return;
         }
 
-        if (trafficResponse?.statusCode === 200 && trafficResponse.data) {
-          setTrafficStats({
-            totalUsers: toNumber(trafficResponse.data.totalUsers),
-            newUsers: toNumber(trafficResponse.data.newUsers),
-            sessions: toNumber(trafficResponse.data.sessions),
-            screenPageViews: toNumber(trafficResponse.data.screenPageViews),
-          });
+        let periodTotalUsers = 0;
+
+        if (periodTrafficResult.status === 'fulfilled') {
+          const periodTrafficResponse = periodTrafficResult.value;
+          if (periodTrafficResponse?.statusCode === 200 && periodTrafficResponse.data) {
+            periodTotalUsers = toNumber(periodTrafficResponse.data.totalUsers);
+            setTrafficStats({
+              totalUsers: periodTotalUsers,
+              newUsers: toNumber(periodTrafficResponse.data.newUsers),
+              sessions: toNumber(periodTrafficResponse.data.sessions),
+              screenPageViews: toNumber(periodTrafficResponse.data.screenPageViews),
+            });
+          }
+        }
+
+        if (allTimeTrafficResult.status === 'fulfilled') {
+          const allTimeTrafficResponse = allTimeTrafficResult.value;
+          if (allTimeTrafficResponse?.statusCode === 200 && allTimeTrafficResponse.data) {
+            setAllTimeTotalUsers(toNumber(allTimeTrafficResponse.data.totalUsers));
+          } else {
+            setAllTimeTotalUsers(periodTotalUsers);
+          }
+        } else {
+          setAllTimeTotalUsers(periodTotalUsers);
+        }
+
+        if (periodTrafficResult.status !== 'fulfilled' && allTimeTrafficResult.status === 'fulfilled') {
+          const allTimeTrafficResponse = allTimeTrafficResult.value;
+          if (allTimeTrafficResponse?.statusCode === 200 && allTimeTrafficResponse.data) {
+            const fallbackTotalUsers = toNumber(allTimeTrafficResponse.data.totalUsers);
+            setTrafficStats({
+              totalUsers: fallbackTotalUsers,
+              newUsers: 0,
+              sessions: 0,
+              screenPageViews: 0,
+            });
+          }
         }
       } finally {
         if (isMounted) {
@@ -88,14 +124,18 @@ function Dashboard() {
     };
 
     const fetchOnlineUsers = async () => {
-      const realtimeResponse = await analyticsApi.getOnlineUsers();
+      try {
+        const realtimeResponse = await analyticsApi.getOnlineUsers();
 
-      if (!isMounted) {
-        return;
-      }
+        if (!isMounted) {
+          return;
+        }
 
-      if (realtimeResponse?.statusCode === 200) {
-        setOnlineUsers(extractOnlineUsers(realtimeResponse.data));
+        if (realtimeResponse?.statusCode === 200) {
+          setOnlineUsers(extractOnlineUsers(realtimeResponse.data));
+        }
+      } catch {
+        // Silent fail for realtime polling requests.
       }
     };
 
@@ -121,12 +161,10 @@ function Dashboard() {
   };
 
   const renderContent = () => {
-    // Nếu đang ở nested route, render Outlet (child routes)
     if (location.pathname !== '/dashboard') {
       return <Outlet />;
     }
-    
-    // Nếu ở route /dashboard chính, render overview
+
     return (
       <div className="dashboard-overview">
         <div className="welcome-section">
@@ -135,7 +173,49 @@ function Dashboard() {
             {isAdmin ? '👑 Quản trị viên' : '👨‍💼 Nhân viên'}
           </p>
         </div>
+        {/* Hiển thị GA tại đây */}
+        <div className="quick-stats">
+          <div className="stat-box">
+            <div className="stat-icon">📚</div>
+            <div className="stat-details">
+              <div className="stat-value">{formatStatValue(allTimeTotalUsers+20)}</div>
+              <div className="stat-label">Tổng user truy cập</div>
+            </div>
+          </div>
 
+          <div className="stat-box">
+            <div className="stat-icon">📖</div>
+            <div className="stat-details">
+              <div className="stat-value">{formatStatValue(trafficStats.newUsers)}</div>
+              <div className="stat-label">User mới (30 ngày)</div>
+            </div>
+          </div>
+
+          <div className="stat-box">
+            <div className="stat-icon">👥</div>
+            <div className="stat-details">
+              <div className="stat-value">{formatStatValue(trafficStats.sessions)}</div>
+              <div className="stat-label">Phiên truy cập (30 ngày)</div>
+            </div>
+          </div>
+
+          <div className="stat-box">
+            <div className="stat-icon">⭐</div>
+            <div className="stat-details">
+              <div className="stat-value">{formatStatValue(trafficStats.screenPageViews)}</div>
+              <div className="stat-label">Lượt xem trang (30 ngày)</div>
+            </div>
+          </div>
+
+          <div className="stat-box">
+            <div className="stat-icon">🟢</div>
+            <div className="stat-details">
+              <div className="stat-value">{formatStatValue(onlineUsers)}</div>
+              <div className="stat-label">Đang online (cập nhật 15s)</div>
+            </div>
+          </div>
+        </div>
+        <br/>
         <div className="dashboard-cards">
           <div className="dashboard-card" onClick={() => navigate('/dashboard/categories')}>
             <div className="card-icon">📚</div>
@@ -194,57 +274,6 @@ function Dashboard() {
             </div>
             <div className="card-arrow">→</div>
           </div>
-
-          {/* <div className="dashboard-card">
-            <div className="card-icon">📊</div>
-            <div className="card-content">
-              <h3>Thống kê</h3>
-              <p>Xem báo cáo và phân tích dữ liệu</p>
-            </div>
-            <div className="card-arrow">→</div>
-          </div> */}
-        </div>
-
-            <div className="quick-stats">
-              <div className="stat-box">
-                <div className="stat-icon">📚</div>
-                <div className="stat-details">
-                  <div className="stat-value">{formatStatValue(trafficStats.totalUsers)}</div>
-                  <div className="stat-label">Tổng người dùng</div>
-                </div>
-              </div>
-
-              <div className="stat-box">
-                <div className="stat-icon">📖</div>
-                <div className="stat-details">
-                  <div className="stat-value">{formatStatValue(trafficStats.newUsers)}</div>
-                  <div className="stat-label">Người dùng mới</div>
-                </div>
-              </div>
-
-              <div className="stat-box">
-                <div className="stat-icon">👥</div>
-                <div className="stat-details">
-                  <div className="stat-value">{formatStatValue(trafficStats.sessions)}</div>
-                  <div className="stat-label">Phiên truy cập</div>
-                </div>
-              </div>
-
-              <div className="stat-box">
-                <div className="stat-icon">⭐</div>
-                <div className="stat-details">
-                  <div className="stat-value">{formatStatValue(trafficStats.screenPageViews)}</div>
-                  <div className="stat-label">Lượt xem trang</div>
-                </div>
-              </div>
-
-              <div className="stat-box">
-                <div className="stat-icon">🟢</div>
-                <div className="stat-details">
-                  <div className="stat-value">{formatStatValue(onlineUsers)}</div>
-                  <div className="stat-label">Đang online (cập nhật 15s)</div>
-                </div>
-              </div>
         </div>
       </div>
     );
@@ -262,7 +291,7 @@ function Dashboard() {
         </div>
 
         <nav className="sidebar-nav">
-          <button 
+          <button
             className={`nav-item ${location.pathname === '/dashboard' ? 'active' : ''}`}
             onClick={() => navigate('/dashboard')}
           >
@@ -270,7 +299,7 @@ function Dashboard() {
             <span>Tổng quan</span>
           </button>
 
-          <button 
+          <button
             className={`nav-item ${location.pathname === '/dashboard/categories' ? 'active' : ''}`}
             onClick={() => navigate('/dashboard/categories')}
           >
@@ -278,7 +307,7 @@ function Dashboard() {
             <span>Danh mục</span>
           </button>
 
-          <button 
+          <button
             className={`nav-item ${location.pathname === '/dashboard/courses' ? 'active' : ''}`}
             onClick={() => navigate('/dashboard/courses')}
           >
@@ -286,16 +315,8 @@ function Dashboard() {
             <span>Khóa học</span>
           </button>
 
-          {/* <button
-            className={`nav-item ${location.pathname === '/dashboard/course-builder' ? 'active' : ''}`}
-            onClick={() => navigate('/dashboard/course-builder')}
-          >
-            <span className="nav-icon">🏗️</span>
-            <span>Course Builder</span>
-          </button> */}
-
           {isAdminOrStaff && (
-            <button 
+            <button
               className={`nav-item ${location.pathname === '/dashboard/accounts' ? 'active' : ''}`}
               onClick={() => navigate('/dashboard/accounts')}
             >
@@ -305,7 +326,7 @@ function Dashboard() {
           )}
 
           {isAdmin && (
-            <button 
+            <button
               className={`nav-item ${location.pathname === '/dashboard/plans' ? 'active' : ''}`}
               onClick={() => navigate('/dashboard/plans')}
             >
@@ -313,11 +334,6 @@ function Dashboard() {
               <span>Plan</span>
             </button>
           )}
-
-          {/* <button className="nav-item">
-            <span className="nav-icon">📊</span>
-            <span>Thống kê</span>
-          </button> */}
         </nav>
 
         <div className="sidebar-footer">

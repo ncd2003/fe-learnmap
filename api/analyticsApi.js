@@ -8,6 +8,13 @@ export const analyticsApi = {
     return response.data;
   },
 
+  getAllTimeTraffic: async () => {
+    const response = await AuthorBaseApi.get('/analytics/admin/traffic', {
+      params: { startDate: '3650daysAgo', endDate: 'today' },
+    });
+    return response.data;
+  },
+
   getOnlineUsers: async () => {
     const response = await AuthorBaseApi.get('/analytics/admin/online-users', {
       skipErrorToast: true,
