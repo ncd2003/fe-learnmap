@@ -201,7 +201,7 @@ function UserPlans() {
               {plan.code !== 'FREE' && (
                 <div className="plan-price-section">
                   <div className="plan-price">{formatPrice(plan.price)}</div>
-                  <div className="plan-duration">/{plan.durationInDays} tháng</div>
+                  <div className="plan-duration">/{plan.durationInDays} năm</div>
                 </div>
               )}
 
